@@ -11,18 +11,21 @@
 
 // This example requires the Places library. Include the libraries=places
 // parameter when you first load the API. For example:
-// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
 let map: google.maps.Map;
 let places: google.maps.places.PlacesService;
 let infoWindow: google.maps.InfoWindow;
 let markers: google.maps.Marker[] = [];
 let autocomplete: google.maps.places.Autocomplete;
+let searchTerm='';
+
+
+let csvdata: any[] = [];
 
 const countryRestrict = { country: "us" };
 const MARKER_PATH =
   "https://developers.google.com/maps/documentation/javascript/images/marker_green";
-const hostnameRegexp = new RegExp("^https?://.+?/");
+const hostnameRegexp = new RegExp("^http?://.+?/");
 
 const countries: Record<
   string,
@@ -82,6 +85,23 @@ const countries: Record<
   },
 };
 
+function exportToCsv(): void {
+  let date = new Date().toDateString()
+  let CsvString = "";
+  csvdata.forEach(function(RowItem, RowIndex) {
+    RowItem.forEach(function(ColItem, ColIndex) {
+      CsvString += ColItem + ',';
+    });
+    CsvString += "\r\n";
+  });
+  CsvString = "data:application/csv," + encodeURIComponent(CsvString);
+  const x = document.createElement("A");
+  x.setAttribute("href", CsvString );
+  x.setAttribute("download",date + ".csv");
+  document.body.appendChild(x);
+  x.click();
+}
+
 function initMap(): void {
   map = new google.maps.Map(document.getElementById("map") as HTMLElement, {
     zoom: countries["us"].zoom,
@@ -136,7 +156,7 @@ function onPlaceChanged() {
 function search() {
   const search = {
     bounds: map.getBounds() as google.maps.LatLngBounds,
-    types: ["lodging"],
+    types: [searchTerm],
   };
 
   places.nearbySearch(
@@ -252,6 +272,10 @@ function clearResults() {
   }
 }
 
+
+
+
+
 // Get the place details for a hotel. Show the information in an info window,
 // anchored on the marker for the hotel that the user selected.
 function showInfoWindow() {
@@ -273,25 +297,37 @@ function showInfoWindow() {
 
 // Load the place information into the HTML elements used by the info window.
 function buildIWContent(place) {
+
+  let dataPlace = {
+    name: '',
+    icon: '',
+    url: '',
+    website: '',
+    address: '',
+    phone: '',
+  };
+
   (document.getElementById("iw-icon") as HTMLElement).innerHTML =
     '<img class="hotelIcon" ' + 'src="' + place.icon + '"/>';
+  dataPlace.icon = place.icon
   (document.getElementById("iw-url") as HTMLElement).innerHTML =
     '<b><a href="' + place.url + '">' + place.name + "</a></b>";
+  dataPlace.url = place.url;
+  dataPlace.name = place.name;
   (document.getElementById("iw-address") as HTMLElement).textContent =
     place.vicinity;
+  dataPlace.address = place.vicinity;
 
   if (place.formatted_phone_number) {
     (document.getElementById("iw-phone-row") as HTMLElement).style.display = "";
     (document.getElementById("iw-phone") as HTMLElement).textContent =
       place.formatted_phone_number;
+    dataPlace.phone = place.formatted_phone_number
   } else {
     (document.getElementById("iw-phone-row") as HTMLElement).style.display =
       "none";
   }
 
-  // Assign a five-star rating to the hotel, using a black star ('&#10029;')
-  // to indicate the rating the hotel has earned, and a white star ('&#10025;')
-  // for the rating points not achieved.
   if (place.rating) {
     let ratingHtml = "";
 
@@ -319,7 +355,7 @@ function buildIWContent(place) {
     let website = String(hostnameRegexp.exec(place.website));
 
     if (!website) {
-      website = "http://" + place.website + "/";
+      website = "https://" + place.website + "/";
       fullUrl = website;
     }
 
@@ -327,10 +363,12 @@ function buildIWContent(place) {
       "";
     (document.getElementById("iw-website") as HTMLElement).textContent =
       website;
+    dataPlace.website = website;
   } else {
     (document.getElementById("iw-website-row") as HTMLElement).style.display =
       "none";
   }
+  csvdata.push(dataPlace);
 }
 
 declare global {
