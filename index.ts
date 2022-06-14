@@ -1,27 +1,10 @@
-/**
- * @license
- * Copyright 2019 Google LLC. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-
-// This example uses the autocomplete feature of the Google Places API.
-// It allows the user to find all hotels in a given place, within a given
-// country. It then displays markers for all the hotels returned,
-// with on-click details for each hotel.
-
-// This example requires the Places library. Include the libraries=places
-// parameter when you first load the API. For example:
-
 let map: google.maps.Map;
 let places: google.maps.places.PlacesService;
 let infoWindow: google.maps.InfoWindow;
 let markers: google.maps.Marker[] = [];
 let autocomplete: google.maps.places.Autocomplete;
 let searchTerm='';
-
-
 let csvdata: any[] = [];
-
 const countryRestrict = { country: "us" };
 const MARKER_PATH =
   "https://developers.google.com/maps/documentation/javascript/images/marker_green";
@@ -85,24 +68,7 @@ const countries: Record<
   },
 };
 
-function exportToCsv(): void {
-  let date = new Date().toDateString()
-  let CsvString = "";
-  csvdata.forEach(function(RowItem, RowIndex) {
-    RowItem.forEach(function(ColItem, ColIndex) {
-      CsvString += ColItem + ',';
-    });
-    CsvString += "\r\n";
-  });
-  CsvString = "data:application/csv," + encodeURIComponent(CsvString);
-  const x = document.createElement("A");
-  x.setAttribute("href", CsvString );
-  x.setAttribute("download",date + ".csv");
-  document.body.appendChild(x);
-  x.click();
-}
-
-function initMap(): void {
+function initMap() {
   map = new google.maps.Map(document.getElementById("map") as HTMLElement, {
     zoom: countries["us"].zoom,
     center: countries["us"].center,
@@ -126,9 +92,14 @@ function initMap(): void {
       fields: ["geometry"],
     }
   );
+
+  const input = document.getElementById("searchTerm") as HTMLInputElement;
+  const searchBox = new google.maps.places.SearchBox(input)
+
   places = new google.maps.places.PlacesService(map);
 
   autocomplete.addListener("place_changed", onPlaceChanged);
+  searchBox.addListener("type_changed", onTypeChanged);
 
   // Add a DOM event listener to react when the user selects a country.
   (document.getElementById("country") as HTMLSelectElement).addEventListener(
@@ -152,6 +123,35 @@ function onPlaceChanged() {
   }
 }
 
+function onTypeChanged() {
+  const search = autocomplete.get(searchTerm);
+
+  if (search.length >0) {
+    search();
+  } else {
+    (document.getElementById("searchTerm") as HTMLInputElement).placeholder =
+        "Enter search term";
+  }
+}
+
+function exportToCsv(): void {
+  let date = new Date().toDateString()
+  let CsvString = "";
+  csvdata.forEach(function(RowItem, RowIndex) {
+    RowItem.forEach(function(ColItem, ColIndex) {
+      CsvString += ColItem + ',';
+    });
+    CsvString += "\r\n";
+  });
+  CsvString = "data:application/csv," + encodeURIComponent(CsvString);
+  const x = document.createElement("A");
+  x.setAttribute("href", CsvString );
+  x.setAttribute("download",date + ".csv");
+  document.body.appendChild(x);
+  x.click();
+}
+
+
 // Search for hotels in the selected city, within the viewport of the map.
 function search() {
   const search = {
@@ -170,6 +170,8 @@ function search() {
         clearResults();
         clearMarkers();
 
+        csvdata = results;
+
         // Create a marker for each hotel found, and
         // assign a letter of the alphabetic to each marker icon.
         for (let i = 0; i < results.length; i++) {
@@ -185,8 +187,6 @@ function search() {
             animation: google.maps.Animation.DROP,
             icon: markerIcon,
           });
-          // If the user clicks a hotel marker, show the details of that hotel
-          // in an info window.
           // @ts-ignore TODO refactor to avoid storing on marker
           markers[i].placeResult = results[i];
           google.maps.event.addListener(markers[i], "click", showInfoWindow);
@@ -235,6 +235,7 @@ function dropMarker(i) {
 }
 
 function addResult(result, i) {
+  csvdata.push(result);
   const results = document.getElementById("results") as HTMLElement;
   const markerLetter = String.fromCharCode("A".charCodeAt(0) + (i % 26));
   const markerIcon = MARKER_PATH + markerLetter + ".png";
@@ -262,6 +263,7 @@ function addResult(result, i) {
   tr.appendChild(iconTd);
   tr.appendChild(nameTd);
   results.appendChild(tr);
+
 }
 
 function clearResults() {
@@ -377,4 +379,4 @@ declare global {
   }
 }
 window.initMap = initMap;
-export {};
+export {exportToCsv};

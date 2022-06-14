@@ -40,18 +40,21 @@ table {
   left: 0;
   position: absolute;
   top: 0;
-  width: 440px;
+  width: 100vw;
   z-index: 1;
 }
 
 #map {
   margin-top: 40px;
-  width: 440px;
+  width: 45vw;
 }
 
 #listing {
   position: absolute;
-  width: 200px;
+  width: 45vw;
+  display: flex;
+  flex-basis: 50%;
+  flex-direction: column;
   height: 470px;
   overflow: auto;
   left: 442px;

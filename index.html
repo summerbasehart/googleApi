@@ -1,27 +1,28 @@
 <!DOCTYPE html>
-<!--
- @license
- Copyright 2019 Google LLC. All Rights Reserved.
- SPDX-License-Identifier: Apache-2.0
--->
-<html>
+<html lang="eng">
   <head>
     <title>Place Autocomplete Hotel Search</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 
+
     <link rel="stylesheet" type="text/css" href="./style.css" />
+
     <script type="module" src="./index.ts"></script>
   </head>
   <body>
-    <div class="hotel-search">
-      <div id="findhotels">Find hotels in:</div>
+      <div class="hotel-search">
+        <div id="findhotels">Search in:</div>
 
-      <div id="locationField">
-        <input id="autocomplete" placeholder="Enter a city" type="text" />
-      </div>
+        <div id="SearchField">
+          <label for="searchTerm"></label><input id="searchTerm" placeholder="Enter search term" type="text" />
+        </div>
 
-      <div id="controls">
-        <select id="country">
+        <div id="locationField">
+          <label for="autocomplete"></label><input id="autocomplete" placeholder="Enter a city" type="text" />
+        </div>
+
+        <div id="controls">
+          <label for="country"></label><select id="country">
           <option value="all">All</option>
           <option value="au">Australia</option>
           <option value="br">Brazil</option>
@@ -37,16 +38,10 @@
           <option value="us" selected>U.S.A.</option>
           <option value="uk">United Kingdom</option>
         </select>
+        </div>
       </div>
-    </div>
 
     <div id="map"></div>
-
-    <div id="listing">
-      <table id="resultsTable">
-        <tbody id="results"></tbody>
-      </table>
-    </div>
 
     <div style="display: none">
       <div id="info-content">
@@ -75,15 +70,17 @@
       </div>
     </div>
 
-    <!-- 
-     The `defer` attribute causes the callback to execute after the full HTML
-     document has been parsed. For non-blocking uses, avoiding race conditions,
-     and consistent behavior across browsers, consider loading using Promises
-     with https://www.npmjs.com/package/@googlemaps/js-api-loader.
-    -->
+    <div id="listing">
+      <table id="resultsTable">
+        <tbody id="results"></tbody>
+      </table>
+      <button id="export" onclick="exportToCsv()">export to CSV</button>
+    </div>
+
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap&libraries=places&v=weekly"
-      defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVYLN_AjSAA9qJpdmI9lo7on3r-dVgaqw&callback=initMap&libraries=places"
+            async defer
     ></script>
+
   </body>
 </html>
